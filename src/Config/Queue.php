@@ -45,6 +45,9 @@ class Queue extends BaseConfig
     public array $database = [
         'dbGroup'   => 'default',
         'getShared' => true,
+        // use skip locked feature to maintain concurrency calls
+        // this is not relevant for the SQLite3 database driver
+        'skipLocked' => true,
     ];
 
     /**

@@ -65,7 +65,7 @@ This way, worker will consume jobs with the `low` priority and then with `high`.
 
 ### Running many instances of the same queue
 
-As mentioned above, sometimes we may want to have multiple instances of the same command running at the same time. The queue is safe to use in that scenario with all databases except `SQLite3` since it doesn't guarantee that the job will be selected only by one process.
+As mentioned above, sometimes we may want to have multiple instances of the same command running at the same time. The queue is safe to use in that scenario with all databases if you keep the `skipLocked` to `true` in the config file. Only for SQLite3 driver this setting is not relevant.
 
 ### Handling long-running process
 
