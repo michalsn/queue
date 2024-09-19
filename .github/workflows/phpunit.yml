@@ -140,7 +140,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           tools: composer, phive, phpunit
-          extensions: intl, json, mbstring, gd, xdebug, xml, sqlite3, redis
+          extensions: intl, json, mbstring, gd, xdebug, xml, sqlite3, sqlsrv, oci8, pgsql
           coverage: xdebug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
