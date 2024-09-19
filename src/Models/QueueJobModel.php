@@ -51,7 +51,7 @@ class QueueJobModel extends Model
     {
         // For SQLite3 memory database this will cause problems
         // so check if we're not in the testing environment first.
-        if ($this->db->database !== ':memory:') {
+        if ($this->db->database !== ':memory:' && $this->db->connID !== false) {
             // Make sure we still have the connection
             $this->db->reconnect();
         }
