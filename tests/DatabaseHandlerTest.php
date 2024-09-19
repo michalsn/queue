@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Closure;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Queue\Entities\QueueJob;
 use CodeIgniter\Queue\Enums\Status;
@@ -36,22 +35,12 @@ final class DatabaseHandlerTest extends TestCase
 
     protected $seed = TestDatabaseQueueSeeder::class;
     private QueueConfig $config;
-    private Closure $field;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->config = config(QueueConfig::class);
-
-        // handle filed custom type conversion for SQLSRV
-        $this->field = function ($field) {
-            if ($this->db->DBDriver === 'SQLSRV') {
-                return "CONVERT(VARCHAR, {$field})";
-            }
-
-            return $field;
-        };
     }
 
     public function testDatabaseHandler(): void
@@ -97,10 +86,10 @@ final class DatabaseHandlerTest extends TestCase
         $result  = $handler->push('queue', 'success', ['key' => 'value']);
 
         $this->assertTrue($result);
-        $this->seeInDatabase('queue_jobs', [
-            'queue'                   => 'queue',
-            ($this->field)('payload') => json_encode(['job' => 'success', 'data' => ['key' => 'value']]),
-            'available_at'            => '1703859316',
+        $this->seeInDatabaseExtended('queue_jobs', [
+            'queue'                 => 'queue',
+            $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key' => 'value']]),
+            'available_at'          => '1703859316',
         ]);
     }
 
@@ -115,11 +104,11 @@ final class DatabaseHandlerTest extends TestCase
         $result  = $handler->setPriority('high')->push('queue', 'success', ['key' => 'value']);
 
         $this->assertTrue($result);
-        $this->seeInDatabase('queue_jobs', [
-            'queue'                   => 'queue',
-            ($this->field)('payload') => json_encode(['job' => 'success', 'data' => ['key' => 'value']]),
-            'priority'                => 'high',
-            'available_at'            => '1703859316',
+        $this->seeInDatabaseExtended('queue_jobs', [
+            'queue'                 => 'queue',
+            $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key' => 'value']]),
+            'priority'              => 'high',
+            'available_at'          => '1703859316',
         ]);
     }
 
@@ -131,21 +120,21 @@ final class DatabaseHandlerTest extends TestCase
         $result  = $handler->push('queue', 'success', ['key1' => 'value1']);
 
         $this->assertTrue($result);
-        $this->seeInDatabase('queue_jobs', [
-            'queue'                   => 'queue',
-            ($this->field)('payload') => json_encode(['job' => 'success', 'data' => ['key1' => 'value1']]),
-            'priority'                => 'low',
-            'available_at'            => '1703859316',
+        $this->seeInDatabaseExtended('queue_jobs', [
+            'queue'                 => 'queue',
+            $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key1' => 'value1']]),
+            'priority'              => 'low',
+            'available_at'          => '1703859316',
         ]);
 
         $result = $handler->setPriority('high')->push('queue', 'success', ['key2' => 'value2']);
 
         $this->assertTrue($result);
-        $this->seeInDatabase('queue_jobs', [
-            'queue'                   => 'queue',
-            ($this->field)('payload') => json_encode(['job' => 'success', 'data' => ['key2' => 'value2']]),
-            'priority'                => 'high',
-            'available_at'            => '1703859316',
+        $this->seeInDatabaseExtended('queue_jobs', [
+            'queue'                 => 'queue',
+            $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key2' => 'value2']]),
+            'priority'              => 'high',
+            'available_at'          => '1703859316',
         ]);
 
         $result = $handler->pop('queue', ['high', 'low']);
@@ -216,7 +205,7 @@ final class DatabaseHandlerTest extends TestCase
         $result  = $handler->pop('queue1', ['default']);
 
         $this->assertInstanceOf(QueueJob::class, $result);
-        $this->seeInDatabase('queue_jobs', [
+        $this->seeInDatabaseExtended('queue_jobs', [
             'status'       => Status::RESERVED->value,
             'available_at' => 1_697_269_860,
         ]);
@@ -243,7 +232,7 @@ final class DatabaseHandlerTest extends TestCase
         $handler  = new DatabaseHandler($this->config);
         $queueJob = $handler->pop('queue1', ['default']);
 
-        $this->seeInDatabase('queue_jobs', [
+        $this->seeInDatabaseExtended('queue_jobs', [
             'id'     => 2,
             'status' => Status::RESERVED->value,
         ]);
@@ -251,7 +240,7 @@ final class DatabaseHandlerTest extends TestCase
         $result = $handler->later($queueJob, 60);
 
         $this->assertTrue($result);
-        $this->seeInDatabase('queue_jobs', [
+        $this->seeInDatabaseExtended('queue_jobs', [
             'id'           => 2,
             'status'       => Status::PENDING->value,
             'available_at' => Time::now()->addSeconds(60)->timestamp,
@@ -275,7 +264,7 @@ final class DatabaseHandlerTest extends TestCase
         $this->dontSeeInDatabase('queue_jobs', [
             'id' => 2,
         ]);
-        $this->seeInDatabase('queue_jobs_failed', [
+        $this->seeInDatabaseExtended('queue_jobs_failed', [
             'id'         => 2,
             'connection' => 'database',
             'queue'      => 'queue1',
@@ -313,7 +302,7 @@ final class DatabaseHandlerTest extends TestCase
         $result = $handler->done($queueJob, true);
 
         $this->assertTrue($result);
-        $this->seeInDatabase('queue_jobs', [
+        $this->seeInDatabaseExtended('queue_jobs', [
             'id'     => 2,
             'status' => Status::DONE->value,
         ]);
@@ -357,10 +346,10 @@ final class DatabaseHandlerTest extends TestCase
 
         $this->assertSame($count, 1);
 
-        $this->seeInDatabase('queue_jobs', [
-            'id'                      => 3,
-            'queue'                   => 'queue1',
-            ($this->field)('payload') => json_encode(['job' => 'failure', 'data' => []]),
+        $this->seeInDatabaseExtended('queue_jobs', [
+            'id'                    => 3,
+            'queue'                 => 'queue1',
+            $this->field('payload') => json_encode(['job' => 'failure', 'data' => []]),
         ]);
         $this->dontSeeInDatabase('queue_jobs_failed', [
             'id' => 1,
@@ -407,7 +396,7 @@ final class DatabaseHandlerTest extends TestCase
         $this->dontSeeInDatabase('queue_jobs_failed', [
             'id' => 1,
         ]);
-        $this->seeInDatabase('queue_jobs_failed', [
+        $this->seeInDatabaseExtended('queue_jobs_failed', [
             'id' => 2,
         ]);
     }
