@@ -20,10 +20,68 @@ on:
 
 jobs:
   main:
-    name: PHP ${{ matrix.php-versions }} Unit Tests
-    runs-on: ubuntu-22.04
+    name: PHP ${{ matrix.php-versions }} - ${{ matrix.db-platforms }}
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    strategy:
+      matrix:
+        php-versions: ['8.1', '8.2', '8.3']
+        db-platforms: ['MySQLi', 'SQLite3']
+        include:
+          # Postgre
+          - php-versions: '8.1'
+            db-platforms: Postgre
+          # SQLSRV
+          - php-versions: '8.1'
+            db-platforms: SQLSRV
+          # OCI8
+          - php-versions: '8.1'
+            db-platforms: OCI8
 
     services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: --health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3
+
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2019-CU10-ubuntu-20.04
+        env:
+          SA_PASSWORD: 1Secure*Password1
+          ACCEPT_EULA: Y
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: --health-cmd="/opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P 1Secure*Password1 -Q 'SELECT @@VERSION'" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      oracle:
+        image: gvenzl/oracle-xe:18
+        env:
+          ORACLE_RANDOM_PASSWORD: true
+          APP_USER: ORACLE
+          APP_USER_PASSWORD: ORACLE
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 10
+
       redis:
         image: redis
         ports:
@@ -34,12 +92,27 @@ jobs:
           --health-timeout=5s
           --health-retries=3
 
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
-    strategy:
-      matrix:
-        php-versions: ['8.1', '8.2', '8.3']
-
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: true
+
+      - name: Create database for MSSQL Server
+        if: matrix.db-platforms == 'SQLSRV'
+        run: sqlcmd -S 127.0.0.1 -U sa -P 1Secure*Password1 -Q "CREATE DATABASE test"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -74,6 +147,7 @@ jobs:
       - name: Test with PHPUnit
         run: vendor/bin/phpunit --coverage-text
         env:
+          DB: ${{ matrix.db-platforms }}
           TERM: xterm-256color
           TACHYCARDIA_MONITOR_GA: enabled
 
@@ -86,7 +160,7 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_PARALLEL: true
-          COVERALLS_FLAG_NAME: PHP ${{ matrix.php-versions }}
+          COVERALLS_FLAG_NAME: PHP ${{ matrix.php-versions }} - ${{ matrix.db-platforms }}
 
   coveralls:
     needs: [main]

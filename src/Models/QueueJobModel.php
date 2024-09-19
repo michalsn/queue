@@ -111,7 +111,7 @@ class QueueJobModel extends Model
         $builder->whereIn('priority', $priority);
 
         if ($priority !== ['default']) {
-            if ($this->db->DBDriver === 'SQLite3') {
+            if ($this->db->DBDriver !== 'MySQLi') {
                 $builder->orderBy(
                     'CASE priority '
                     . implode(
