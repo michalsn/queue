@@ -55,7 +55,7 @@ abstract class TestCase extends CIUnitTestCase
     public function field(string $name): string
     {
         if ($this->db->DBDriver === 'SQLSRV') {
-            return "CONVERT(VARCHAR, {$name})";
+            return "CONVERT(VARCHAR(MAX), {$name})";
         }
 
         return $name;
