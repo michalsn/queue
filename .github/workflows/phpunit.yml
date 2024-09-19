@@ -25,6 +25,12 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  NLS_LANG: 'AMERICAN_AMERICA.UTF8'
+  NLS_DATE_FORMAT: 'YYYY-MM-DD HH24:MI:SS'
+  NLS_TIMESTAMP_FORMAT: 'YYYY-MM-DD HH24:MI:SS'
+  NLS_TIMESTAMP_TZ_FORMAT: 'YYYY-MM-DD HH24:MI:SS'
+
 jobs:
   main:
     name: PHP ${{ matrix.php-versions }} - ${{ matrix.db-platforms }}
