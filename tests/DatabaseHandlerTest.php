@@ -89,7 +89,7 @@ final class DatabaseHandlerTest extends TestCase
         $this->seeInDatabaseExtended('queue_jobs', [
             'queue'                 => 'queue',
             $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key' => 'value']]),
-            'available_at'          => '1703859316',
+            'available_at'          => 1703859316,
         ]);
     }
 
@@ -108,7 +108,7 @@ final class DatabaseHandlerTest extends TestCase
             'queue'                 => 'queue',
             $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key' => 'value']]),
             'priority'              => 'high',
-            'available_at'          => '1703859316',
+            'available_at'          => 1703859316,
         ]);
     }
 
@@ -124,7 +124,7 @@ final class DatabaseHandlerTest extends TestCase
             'queue'                 => 'queue',
             $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key1' => 'value1']]),
             'priority'              => 'low',
-            'available_at'          => '1703859316',
+            'available_at'          => 1703859316,
         ]);
 
         $result = $handler->setPriority('high')->push('queue', 'success', ['key2' => 'value2']);
@@ -134,7 +134,7 @@ final class DatabaseHandlerTest extends TestCase
             'queue'                 => 'queue',
             $this->field('payload') => json_encode(['job' => 'success', 'data' => ['key2' => 'value2']]),
             'priority'              => 'high',
-            'available_at'          => '1703859316',
+            'available_at'          => 1703859316,
         ]);
 
         $result = $handler->pop('queue', ['high', 'low']);
@@ -268,7 +268,7 @@ final class DatabaseHandlerTest extends TestCase
             'id'         => 2,
             'connection' => 'database',
             'queue'      => 'queue1',
-            'failed_at'  => '1703859316',
+            'failed_at'  => 1703859316,
         ]);
     }
 
