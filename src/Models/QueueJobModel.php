@@ -90,7 +90,7 @@ class QueueJobModel extends Model
      */
     private function skipLocked(string $sql): string
     {
-        if ($this->db->DBDriver === 'SQLite3') {
+        if ($this->db->DBDriver === 'SQLite3' || config('Queue')->database['skipLocked'] === false) {
             return $sql;
         }
 

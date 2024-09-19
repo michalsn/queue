@@ -40,8 +40,9 @@ class Queue extends BaseQueue
      * Database handler config.
      */
     public array $database = [
-        'dbGroup'   => 'default',
-        'getShared' => true,
+        'dbGroup'    => 'default',
+        'getShared'  => true,
+        'skipLocked' => true,
     ];
 
     /**

@@ -37,6 +37,7 @@ The configuration settings for `database` handler.
 
 * `dbGroup` - The database group to use. Default value: `default`.
 * `getShared` - Weather to use shared instance. Default value: `true`.
+* `skipLocked` - Weather to use "skip locked" feature to maintain concurrency calls. Default to `true`.
 
 ### $redis
 
