@@ -105,7 +105,7 @@ echo $sql;
             $sql = preg_replace('/ OFFSET .*/', '', $sql);
             $sql = str_replace('SELECT *', 'SELECT "id"', $sql);
             // prepare final query
-            $sql = sprintf('SELECT * FROM "%s" WHERE "id" = (SELECT "id" FROM (%s) WHERE ROWNUM = 1)', $this->table, $sql);
+            $sql = sprintf('SELECT * FROM "%s" WHERE "id" = (SELECT "id" FROM (%s) WHERE ROWNUM = 1)', $this->db->prefixTable($this->table), $sql);
         }
         echo $sql . ' FOR UPDATE SKIP LOCKED';
         return $sql . ' FOR UPDATE SKIP LOCKED';
