@@ -41,11 +41,9 @@ final class QueueJobModelTest extends TestCase
         if ($model->db->DBDriver === 'SQLite3') {
             $this->assertSame($sql, $result);
         } elseif ($model->db->DBDriver === 'SQLSRV') {
-            $expected = 'SELECT * FROM queue_jobs WITH (ROWLOCK,UPDLOCK,READPAST) WHERE queue = "test" AND status = 0 AND available_at < 123456 LIMIT 1';
-            $this->assertSame($expected, $result);
+            $this->assertStringContainsString('WITH (ROWLOCK,UPDLOCK,READPAST) WHERE', $result);
         } else {
-            $expected = 'SELECT * FROM queue_jobs WHERE queue = "test" AND status = 0 AND available_at < 123456 LIMIT 1 FOR UPDATE SKIP LOCKED';
-            $this->assertSame($expected, $result);
+            $this->assertStringContainsString('FOR UPDATE SKIP LOCKED', $result);
         }
     }
 

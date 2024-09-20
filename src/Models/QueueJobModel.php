@@ -101,11 +101,12 @@ class QueueJobModel extends Model
         }
 
         if ($this->db->DBDriver === 'OCI8') {
-            $sql = preg_replace('/ OFFSET .*/', '', $sql);
-            $sql = "SELECT * FROM ({$sql}) WHERE ROWNUM = 1";
+            $sql = str_replace('SELECT *', 'SELECT "id"', $sql);
+            // prepare final query
+            $sql = sprintf('SELECT * FROM "%s" WHERE "id" = (%s)', $this->db->prefixTable($this->table), $sql);
         }
 
-        return $sql .= ' FOR UPDATE SKIP LOCKED';
+        return $sql . ' FOR UPDATE SKIP LOCKED';
     }
 
     /**
@@ -118,7 +119,7 @@ class QueueJobModel extends Model
         if ($priority !== ['default']) {
             if ($this->db->DBDriver !== 'MySQLi') {
                 $builder->orderBy(
-                    'CASE priority '
+                    sprintf('CASE %s ', $this->db->protectIdentifiers('priority'))
                     . implode(
                         ' ',
                         array_map(static fn ($value, $key) => "WHEN '{$value}' THEN {$key}", $priority, array_keys($priority))
