@@ -138,7 +138,6 @@ final class DatabaseHandlerTest extends TestCase
         ]);
 
         $result = $handler->pop('queue', ['high', 'low']);
-        echo (string) $this->db->getLastQuery();
         $this->assertInstanceOf(QueueJob::class, $result);
         $payload = ['job' => 'success', 'data' => ['key2' => 'value2']];
         $this->assertSame($payload, $result->payload);
