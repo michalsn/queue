@@ -11,7 +11,7 @@ on:
       - '.github/workflows/phpunit.yml'
   push:
     branches:
-      - develop
+      - oci8
     paths:
       - '**.php'
       - 'composer.*'
@@ -25,12 +25,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  NLS_LANG: 'AMERICAN_AMERICA.UTF8'
-  NLS_DATE_FORMAT: 'YYYY-MM-DD HH24:MI:SS'
-  NLS_TIMESTAMP_FORMAT: 'YYYY-MM-DD HH24:MI:SS'
-  NLS_TIMESTAMP_TZ_FORMAT: 'YYYY-MM-DD HH24:MI:SS'
-
 jobs:
   main:
     name: PHP ${{ matrix.php-versions }} - ${{ matrix.db-platforms }}
@@ -39,60 +33,9 @@ jobs:
     strategy:
       matrix:
         php-versions: ['8.1', '8.2', '8.3']
-        db-platforms: ['MySQLi', 'SQLite3']
-        include:
-          # Postgre
-          - php-versions: '8.1'
-            db-platforms: Postgre
-          # SQLSRV
-          - php-versions: '8.1'
-            db-platforms: SQLSRV
-          # OCI8
-          - php-versions: '8.1'
-            db-platforms: OCI8
+        db-platforms: ['OCI8']
 
     services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd=pg_isready
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
-      mssql:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          MSSQL_SA_PASSWORD: 1Secure*Password1
-          ACCEPT_EULA: Y
-          MSSQL_PID: Developer
-        ports:
-          - 1433:1433
-        options: >-
-          --health-cmd="/opt/mssql-tools18/bin/sqlcmd -C -S 127.0.0.1 -U sa -P 1Secure*Password1 -Q 'SELECT @@VERSION'"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
       oracle:
         image: gvenzl/oracle-xe:21
         env:
@@ -106,16 +49,6 @@ jobs:
           --health-interval 20s
           --health-timeout 10s
           --health-retries 10
-
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
 
     steps:
       - name: Free Disk Space (Ubuntu)
@@ -175,27 +108,3 @@ jobs:
           DB: ${{ matrix.db-platforms }}
           TERM: xterm-256color
           TACHYCARDIA_MONITOR_GA: enabled
-
-      - if: matrix.php-versions == '8.1'
-        name: Run Coveralls
-        continue-on-error: true
-        run: |
-          sudo phive --no-progress install --global --trust-gpg-keys E82B2FB314E9906E php-coveralls
-          php-coveralls --verbose --coverage_clover=build/phpunit/clover.xml --json_path build/phpunit/coveralls-upload.json
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_PARALLEL: true
-          COVERALLS_FLAG_NAME: PHP ${{ matrix.php-versions }} - ${{ matrix.db-platforms }}
-
-  coveralls:
-    needs: [main]
-    name: Coveralls Finished
-    if: github.repository_owner == 'codeigniter4'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Upload Coveralls results
-        uses: coverallsapp/github-action@master
-        continue-on-error: true
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
