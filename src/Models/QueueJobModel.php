@@ -100,6 +100,10 @@ class QueueJobModel extends Model
             return str_replace('WHERE', $replace, $sql);
         }
 
+        if ($this->db->DBDriver === 'OCI8') {
+            $sql = "SELECT * FROM ({$sql}) subquery";
+        }
+
         return $sql .= ' FOR UPDATE SKIP LOCKED';
     }
 
