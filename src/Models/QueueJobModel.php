@@ -67,7 +67,7 @@ class QueueJobModel extends Model
 
         $builder = $this->setPriority($builder, $priority);
         $sql     = $builder->getCompiledSelect();
-echo $sql;
+
         $query = $this->db->query($this->skipLocked($sql));
         if ($query === false) {
             return null;
@@ -102,12 +102,12 @@ echo $sql;
 
         if ($this->db->DBDriver === 'OCI8') {
             // remove LIMIT part from the query
-            $sql = preg_replace('/ OFFSET .*/', '', $sql);
+            //$sql = preg_replace('/ OFFSET .*/', '', $sql);
             $sql = str_replace('SELECT *', 'SELECT "id"', $sql);
             // prepare final query
-            $sql = sprintf('SELECT * FROM "%s" WHERE "id" = (SELECT "id" FROM (%s) WHERE ROWNUM = 1)', $this->db->prefixTable($this->table), $sql);
+            $sql = sprintf('SELECT * FROM "%s" WHERE "id" = (%s)', $this->db->prefixTable($this->table), $sql);
         }
-        echo $sql . ' FOR UPDATE SKIP LOCKED';
+
         return $sql . ' FOR UPDATE SKIP LOCKED';
     }
 
