@@ -104,7 +104,7 @@ echo $sql;
             $sql = preg_replace('/ OFFSET .*/', '', $sql);
             $sql = "SELECT * FROM ({$sql}) WHERE ROWNUM = 1";
         }
-
+        echo $sql . ' FOR UPDATE SKIP LOCKED';
         return $sql . ' FOR UPDATE SKIP LOCKED';
     }
 
