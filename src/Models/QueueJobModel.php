@@ -114,7 +114,7 @@ echo $sql;
             $replace = sprintf('SELECT *, ROW_NUMBER() OVER (%s) AS rn', $orderBy);
             $sql = str_replace('SELECT *', $replace, $sql);
             // prepare final query
-            $sql = "WITH ranked_jobs AS ({$sql}) SELECT * FROM ranked_jobs WHERE rn = 1 FOR UPDATE SKIP LOCKED;";
+            $sql = "WITH ranked_jobs AS ({$sql}) SELECT * FROM ranked_jobs WHERE rn = 1";
         }
         echo $sql . ' FOR UPDATE SKIP LOCKED';
         return $sql . ' FOR UPDATE SKIP LOCKED';
