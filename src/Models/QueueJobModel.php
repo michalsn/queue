@@ -67,7 +67,7 @@ class QueueJobModel extends Model
 
         $builder = $this->setPriority($builder, $priority);
         $sql     = $builder->getCompiledSelect();
-
+echo $sql;
         $query = $this->db->query($this->skipLocked($sql));
         if ($query === false) {
             return null;
@@ -105,7 +105,7 @@ class QueueJobModel extends Model
             $sql = "SELECT * FROM ({$sql}) WHERE ROWNUM = 1";
         }
 
-        return $sql .= ' FOR UPDATE SKIP LOCKED';
+        return $sql . ' FOR UPDATE SKIP LOCKED';
     }
 
     /**
