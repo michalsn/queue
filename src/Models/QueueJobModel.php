@@ -101,7 +101,8 @@ class QueueJobModel extends Model
         }
 
         if ($this->db->DBDriver === 'OCI8') {
-            $sql = "SELECT * FROM ({$sql}) subquery";
+            $sql = preg_replace('/ OFFSET .*/', '', $sql);
+            $sql = "SELECT * FROM ({$sql}) WHERE ROWNUM = 1";
         }
 
         return $sql .= ' FOR UPDATE SKIP LOCKED';
