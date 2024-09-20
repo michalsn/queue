@@ -101,8 +101,20 @@ echo $sql;
         }
 
         if ($this->db->DBDriver === 'OCI8') {
+            // extract and remove ORDER BY part from the query
+            $orderBy = '';
+            preg_match('/ORDER BY\s+.*?(?=\s+OFFSET|\s*$)/is', $sql, $matches);
+            if (isset($matches[0])) {
+                $orderBy = $matches[0];
+            }
+            $sql = preg_replace('/ORDER BY\s+.*?(?=\s+OFFSET|\s*$)/is', '', $sql);
+            // remove LIMIT part from the query
             $sql = preg_replace('/ OFFSET .*/', '', $sql);
-            $sql = "SELECT * FROM ({$sql}) WHERE ROWNUM = 1";
+            // modify SELECT
+            $replace = sprintf('SELECT *, ROW_NUMBER() OVER (%s) AS rn', $orderBy);
+            $sql = str_replace('SELECT *', $replace, $sql);
+            // prepare final query
+            $sql = "SELECT * FROM ({$sql}) WHERE rn = 1";
         }
         echo $sql . ' FOR UPDATE SKIP LOCKED';
         return $sql . ' FOR UPDATE SKIP LOCKED';
