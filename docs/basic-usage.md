@@ -79,6 +79,52 @@ You may be wondering what the `$this->data['message']` variable is all about. We
 
 Throwing an exception is a way to let the queue worker know that the job has failed.
 
+#### Using transactions
+
+If you have to use transactions in our Jobs - this is a simple schema you can follow.
+
+!!! note
+
+    Due to the nature of the queue worker, [Strict Mode](https://codeigniter.com/user_guide/database/transactions.html#strict-mode) is automatically disabled for the database connection assigned to the Database handler.
+
+    If you use the same connection group in your Jobs as defined in the Database handler, then in that case, you don't need to do anything.
+
+    On the other hand, if you are using a different group to connect to the database in your Jobs, then if you are using transactions, you should disable Strict Mode through the method: `$db->transStrict(false)` or by setting the `transStrict` option to `false` in your connection config group - the last option will disable Strict Mode globally.
+
+```php
+// ...
+
+class Email extends BaseJob implements JobInterface
+{
+    /**
+     * @throws Exception
+     */
+    public function process(string $data):
+    {
+        try {
+            $db = db_connect();
+            // Disable Strict Mode
+            $db->transStrict(false);
+            $db->transBegin();
+
+            // Job logic goes here
+            // Your code should throw an exception on error
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+            } else {
+                $db->transCommit();
+            }
+        } catch (Exception $e) {
+            $db->transRollback();
+            throw $e;
+        }
+    }
+}
+```
+
+#### Other options
+
 We can also configure some things on the job level. It's a number of tries, when the job is failing and time after the job will be retried again after failure. We can specify these options by using variables:
 
 ```php

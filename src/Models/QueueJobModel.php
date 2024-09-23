@@ -14,10 +14,14 @@ declare(strict_types=1);
 namespace CodeIgniter\Queue\Models;
 
 use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Model;
 use CodeIgniter\Queue\Entities\QueueJob;
 use CodeIgniter\Queue\Enums\Status;
+use CodeIgniter\Validation\ValidationInterface;
+use Config\Database;
 use ReflectionException;
 
 class QueueJobModel extends Model
@@ -41,6 +45,21 @@ class QueueJobModel extends Model
 
     // Callbacks
     protected $allowCallbacks = false;
+
+    public function __construct(?ConnectionInterface $db = null, ?ValidationInterface $validation = null)
+    {
+        $this->DBGroup = config('Queue')->database['dbGroup'];
+
+        /**
+         * @var BaseConnection|null $db
+         */
+        $db ??= Database::connect($this->DBGroup);
+
+        // Turn off the Strict Mode
+        $db->transStrict(false);
+
+        parent::__construct($db, $validation);
+    }
 
     /**
      * Get the oldest item from the queue.
