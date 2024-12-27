@@ -254,7 +254,7 @@ final class RedisHandlerTest extends TestCase
         $handler = new RedisHandler($this->config);
         $count   = $handler->retry(1, 'queue1');
 
-        $this->assertSame($count, 1);
+        $this->assertSame(1, $count);
 
         $redis = self::getPrivateProperty($handler, 'redis');
         $this->assertSame(2, $redis->zCard('queues:queue1:default'));

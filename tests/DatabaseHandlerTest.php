@@ -344,7 +344,7 @@ final class DatabaseHandlerTest extends TestCase
         $handler = new DatabaseHandler($this->config);
         $count   = $handler->retry(1, 'queue1');
 
-        $this->assertSame($count, 1);
+        $this->assertSame(1, $count);
 
         $this->seeInDatabase('queue_jobs', [
             'id'      => 3,

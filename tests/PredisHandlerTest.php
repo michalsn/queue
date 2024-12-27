@@ -288,7 +288,7 @@ final class PredisHandlerTest extends TestCase
         $handler = new PredisHandler($this->config);
         $count   = $handler->retry(1, 'queue1');
 
-        $this->assertSame($count, 1);
+        $this->assertSame(1, $count);
 
         $predis = self::getPrivateProperty($handler, 'predis');
         $this->assertSame(2, $predis->zcard('queues:queue1:default'));
