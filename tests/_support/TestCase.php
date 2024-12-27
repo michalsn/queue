@@ -41,16 +41,4 @@ abstract class TestCase extends CIUnitTestCase
         // Reset the current time.
         Time::setTestNow();
     }
-
-    /**
-     * Handle custom field type conversion for SQLSRV
-     */
-    public function field(string $name): string
-    {
-        if ($this->db->DBDriver === 'SQLSRV') {
-            return "CONVERT(VARCHAR(MAX), {$name})";
-        }
-
-        return $name;
-    }
 }
