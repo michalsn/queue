@@ -17,7 +17,6 @@ use CodeIgniter\I18n\Time;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use Exception;
-use Tests\Support\Constraints\SeeInDatabaseExtended;
 
 abstract class TestCase extends CIUnitTestCase
 {
@@ -41,12 +40,6 @@ abstract class TestCase extends CIUnitTestCase
 
         // Reset the current time.
         Time::setTestNow();
-    }
-
-    public function seeInDatabaseExtended(string $table, array $where): void
-    {
-        $constraint = new SeeInDatabaseExtended($this->db, $where);
-        $this->assertThat($table, $constraint);
     }
 
     /**
