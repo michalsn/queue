@@ -100,7 +100,13 @@ class QueueJobModel extends Model
             return str_replace('WHERE', $replace, $sql);
         }
 
-        return $sql .= ' FOR UPDATE SKIP LOCKED';
+        if ($this->db->DBDriver === 'OCI8') {
+            $sql = str_replace('SELECT *', 'SELECT "id"', $sql);
+            // prepare final query
+            $sql = sprintf('SELECT * FROM "%s" WHERE "id" = (%s)', $this->db->prefixTable($this->table), $sql);
+        }
+
+        return $sql . ' FOR UPDATE SKIP LOCKED';
     }
 
     /**
@@ -111,9 +117,9 @@ class QueueJobModel extends Model
         $builder->whereIn('priority', $priority);
 
         if ($priority !== ['default']) {
-            if ($this->db->DBDriver === 'SQLite3') {
+            if ($this->db->DBDriver !== 'MySQLi') {
                 $builder->orderBy(
-                    'CASE priority '
+                    sprintf('CASE %s ', $this->db->protectIdentifiers('priority'))
                     . implode(
                         ' ',
                         array_map(static fn ($value, $key) => "WHEN '{$value}' THEN {$key}", $priority, array_keys($priority))
