@@ -86,7 +86,7 @@ class PredisHandler extends BaseHandler implements QueueInterface
      */
     public function pop(string $queue, array $priorities): ?QueueJob
     {
-        $now = Time::now()->timestamp;
+        $now = (string) Time::now()->timestamp;
 
         // Prepare the arguments for the Lua script
         $args = [
