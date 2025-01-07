@@ -39,6 +39,10 @@ The configuration settings for `database` handler.
 * `getShared` - Weather to use shared instance. Default value: `true`.
 * `skipLocked` - Weather to use "skip locked" feature to maintain concurrency calls. Default to `true`.
 
+!!! note
+
+    The [Strict Mode](https://codeigniter.com/user_guide/database/transactions.html#strict-mode) for the given `dbGroup` is automatically disabled - due to the nature of the queue worker.
+
 ### $redis
 
 The configuration settings for `redis` handler. You need to have a [ext-redis](https://github.com/phpredis/phpredis) installed to use it.

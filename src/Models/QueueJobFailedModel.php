@@ -13,8 +13,12 @@ declare(strict_types=1);
 
 namespace CodeIgniter\Queue\Models;
 
+use CodeIgniter\Database\BaseConnection;
+use CodeIgniter\Database\ConnectionInterface;
 use CodeIgniter\Model;
 use CodeIgniter\Queue\Entities\QueueJobFailed;
+use CodeIgniter\Validation\ValidationInterface;
+use Config\Database;
 
 class QueueJobFailedModel extends Model
 {
@@ -37,4 +41,19 @@ class QueueJobFailedModel extends Model
 
     // Callbacks
     protected $allowCallbacks = false;
+
+    public function __construct(?ConnectionInterface $db = null, ?ValidationInterface $validation = null)
+    {
+        $this->DBGroup = config('Queue')->database['dbGroup'];
+
+        /**
+         * @var BaseConnection|null $db
+         */
+        $db ??= Database::connect($this->DBGroup);
+
+        // Turn off the Strict Mode
+        $db->transStrict(false);
+
+        parent::__construct($db, $validation);
+    }
 }
