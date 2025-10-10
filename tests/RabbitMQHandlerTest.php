@@ -383,6 +383,6 @@ final class RabbitMQHandlerTest extends TestCase
      */
     private function isRabbitMQAvailable(): bool
     {
-        return class_exists(AMQPConnectionFactory::class);
+        return true;//class_exists(AMQPConnectionFactory::class);
     }
 }
